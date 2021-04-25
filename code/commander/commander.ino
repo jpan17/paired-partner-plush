@@ -1,8 +1,24 @@
+/* Authors: Jessica Pan and Felicia Zhu
+ * Advisor: Michael Littman
+ * Spring 2021
+ */
+/* ------------------------------------------------------------------------ */
 // library imports
 /* ------------------------------------------------------------------------ */
 #include <Adafruit_NeoPixel.h>
 #include <Servo.h>
 #include "config.h"
+
+#include <string.h>
+#include <Arduino.h>
+#include <SPI.h>
+#include "Adafruit_BLE.h"
+#include "Adafruit_BluefruitLE_SPI.h"
+#include "Adafruit_BluefruitLE_UART.h"
+
+#if SOFTWARE_SERIAL_AVAILABLE
+  #include <SoftwareSerial.h>
+#endif
 
 /* ------------------------------------------------------------------------ */
 // define all of the pinouts
@@ -15,11 +31,21 @@
 
 #define NUM_PIXELS 5
 
+#define FACTORYRESET_ENABLE         1
+#define MINIMUM_FIRMWARE_VERSION    "0.6.6"
+#define MODE_LED_BEHAVIOUR          "MODE"
+#define BLUEFRUIT_HWSERIAL_NAME           Serial1
+#define BLUEFRUIT_UART_MODE_PIN           -1
+#define BLUEFRUIT_UART_CTS_PIN            -1
+#define BLUEFRUIT_UART_RTS_PIN            -1
+
 /* ------------------------------------------------------------------------ */
 // create objects
 Servo myservo;
 Adafruit_NeoPixel strip = Adafruit_NeoPixel(NUM_PIXELS, NEOPIXEL_PIN, NEO_GRB + NEO_KHZ800);
 AdafruitIO_Feed *touch_light = io.feed("touchSensor");
+
+Adafruit_BluefruitLE_UART ble(BLUEFRUIT_HWSERIAL_NAME, BLUEFRUIT_UART_MODE_PIN);
 
 /* ------------------------------------------------------------------------ */
 // store distance measured by distance sensor
@@ -36,7 +62,7 @@ const long interval = 10000;
 /* ------------------------------------------------------------------------ */
 // runs one time when first starting
 void setup() {
-  Serial.begin(9600);
+  Serial.begin(115200);
   Serial.println("Paired Partner Plush starting...");
 
   // 1. Setup distance sensor
@@ -92,6 +118,7 @@ void loop() {
   // 1. Calculate distance and move tail / buzz if object is close
   distance = getDistance();
   if (distance <= 10) {
+    Serial.println("Object detected");
     // wiggle the servo
     myservo.write(10);
     delay(100);
@@ -108,6 +135,7 @@ void loop() {
   // 3. Touch sensor activated
   unsigned long currentMillis = millis();
   if (tap == 1) {
+    Serial.println("Tapped!");
     if (currentMillis - previousMillis >= interval) {
       off();
       tap = 0;
@@ -164,6 +192,7 @@ void play(char note, int beats) {
 /* ------------------------------------------------------------------------ */
 // seal plays a little tune
 void playTune() {
+  Serial.println("Playing tune");
   play('g', 2);       //ha
   play('g', 1);       //ppy
   play('a', 4);       //birth

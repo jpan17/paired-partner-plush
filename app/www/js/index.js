@@ -112,7 +112,7 @@ function encodeString(string) {
 
 function wagglePressed() {
     logOutput("Waggle pressed");
-    let encodedString = encodeString("!C")
+    let encodedString = encodeString("!W")
     bluetoothle.write(r => {}, e => {}, {
         address: resultAddress,
         service: resultService,
@@ -120,16 +120,34 @@ function wagglePressed() {
         value: encodedString,
     })
 
-    logOutput(JSON.stringify({
-        address: resultAddress,
-        service: resultService,
-        characteristic: resultCharacteristic,
-        value: encodedString,
-    }))
+    // logOutput(JSON.stringify({
+    //     address: resultAddress,
+    //     service: resultService,
+    //     characteristic: resultCharacteristic,
+    //     value: encodedString,
+    // }))
 }
 
 function lightPressed() {
     logOutput("Light pressed");
+    let encodedString = encodeString("!L")
+    bluetoothle.write(r => {}, e => {}, {
+        address: resultAddress,
+        service: resultService,
+        characteristic: resultCharacteristic,
+        value: encodedString,
+    })
+
+    // logOutput(JSON.stringify({
+    //     address: resultAddress,
+    //     service: resultService,
+    //     characteristic: resultCharacteristic,
+    //     value: encodedString,
+    // }))
+}
+
+function barkPressed() {
+    logOutput("Bark pressed");
     let encodedString = encodeString("!B")
     bluetoothle.write(r => {}, e => {}, {
         address: resultAddress,
@@ -138,30 +156,12 @@ function lightPressed() {
         value: encodedString,
     })
 
-    logOutput(JSON.stringify({
-        address: resultAddress,
-        service: resultService,
-        characteristic: resultCharacteristic,
-        value: encodedString,
-    }))
-}
-
-function barkPressed() {
-    logOutput("Bark pressed");
-    let encodedString = encodeString("!A")
-    bluetoothle.write(r => {}, e => {}, {
-        address: resultAddress,
-        service: resultService,
-        characteristic: resultCharacteristic,
-        value: encodedString,
-    })
-
-    logOutput(JSON.stringify({
-        address: resultAddress,
-        service: resultService,
-        characteristic: resultCharacteristic,
-        value: encodedString,
-    }))
+    // logOutput(JSON.stringify({
+    //     address: resultAddress,
+    //     service: resultService,
+    //     characteristic: resultCharacteristic,
+    //     value: encodedString,
+    // }))
 }
 
 function connectSuccess(result) {

@@ -59,9 +59,11 @@ int recVal = 0;
 unsigned long previousMillis = 0;
 const long interval = 10000;
 
+// store light color values
 uint8_t light_red = 104;
 uint8_t light_green = 0;
 uint8_t light_blue = 204;
+
 /* ------------------------------------------------------------------------ */
 // helper functions and variables for Bluefruit functionality
 void error(const __FlashStringHelper*err) {
@@ -199,47 +201,38 @@ void loop() {
   uint8_t len = readPacket(&ble, BLE_READPACKET_TIMEOUT);
   if (len == 0) return;
 
-  // color picker
-  if (packetbuffer[1] == 'C') {
-    uint8_t red = packetbuffer[2];
-    uint8_t green = packetbuffer[3];
-    uint8_t blue = packetbuffer[4];
+  // 4a. Waggle
+  if (packetbuffer[1] == 'W') {
+    // wiggle the servo
+    myservo.write(10);
+    delay(100);
 
-    Serial.print ("RGB #");
-    if (red < 0x10) Serial.print("0");
-    Serial.print(red, HEX);
-    if (green < 0x10) Serial.print("0");
-    Serial.print(green, HEX);
-    if (blue < 0x10) Serial.print("0");
-    Serial.println(blue, HEX);
+    myservo.write(150);
+    delay(100);
+  }
 
-    light_red = red;
-    light_green = green;
-    light_blue = blue;
+  // 4b. Bark
+  if (packetbuffer[1] == 'B') {
+    playTune();
+  }
 
-    // blink the color real quick
+  // 4c. Light up
+  if (packetbuffer[1] == 'L') {
     for (int i = 0; i < strip.numPixels(); i++) {
-      strip.setPixelColor(i, light_red, light_green, light_blue);
+      strip.setPixelColor(i, light_red, light_green, light_red);
     }
     strip.show();
     delay(1000);
-    off();
-  }
-
-  // button presses
-  if (packetbuffer[1] == 'B') {
-    uint8_t buttnum = packetbuffer[2] - '0';
-    boolean pressed = packetbuffer[3] - '0';
-    Serial.print ("Button "); 
-    Serial.print(buttnum);
-    if (pressed) {
-      Serial.println(" pressed");
-    } else {
-      Serial.println(" released");
+    
+    for (int i = 0; i < strip.numPixels(); i++) {
+      strip.setPixelColor(i, 0, 0, 0);
     }
+    strip.show();
   }
+  
 }
 
+/* ------------------------------------------------------------------------ */
 // code to flash NeoPixels when stable connection made
 void flash() {
   for (int i = 0; i < strip.numPixels(); i++) {
@@ -254,6 +247,7 @@ void flash() {
   strip.show();
   delay(200);
 }
+
 /* ------------------------------------------------------------------------ */
 // gets the distance measurements from the ultrasonic sensor
 float getDistance() {

@@ -11,7 +11,7 @@
         <div class="app">
             <h1>Paired Partner Plush</h1>
         </div>
-        <div class="wrap">
+        <!-- <div class="wrap">
             <div class="half">
               <div class="colorPicker"></div>
             </div>
@@ -20,13 +20,24 @@
               <div id="values"></div>
               <input id="hexInput"></input>
             </div>
+          </div> -->
+          <div id="deviceready" class="blink">
+            <p class="event listening">Connecting to Device</p>
+            <div class="event received">
+                <p>Found Partner Plush!</p>
+            </div>
+            <h2 id="output">Text belongs here</h2>
+        </div>
+          <div>
+              <button onclick="lightPressed()">Light up!</button>
           </div>
           <div>
-              <button>Vibrate!</button>
+              <button onclick="barkPressed()">Speak!</button>
           </div>
           <div>
-              <button>Wave!</button>
-          </div>
+            <button onclick="wagglePressed()">Waggle!</button>
+        </div>
+        <script src="cordova.js"></script>
         <script src="js/index.js"></script>
     </body>
 </html>

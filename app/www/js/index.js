@@ -1,23 +1,167 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
+// Wait for the deviceready event before using any of Cordova's device APIs.
+// See https://cordova.apache.org/docs/en/latest/cordova/events/events.html#deviceready
 document.addEventListener('deviceready', onDeviceReady, false);
+var resultAddress = '';
+var resultService = '6e400001-b5a3-f393-e0a9-e50e24dcca9e';
+var resultCharacteristic = '6e400002-b5a3-f393-e0a9-e50e24dcca9e';
 
-function logOutput(message) {
-    document.getElementById('output').innerHTML += message + '<br>';
+function logOutput(...message) {
+    document.getElementById('output').innerHTML += message.join(' ') + '<br>';
 }
 
-function onAccelSuccess(acceleration) {
-    var x = acceleration[0]; 
-    var y = acceleration[1];
-    var z = acceleration[2];
+function discoverSuccess(result) {
+    logOutput("length:", result.services.length)
+    logOutput("Discover returned with status: " + result.status);
 
-    logOutput('x: ' + x + ', y: ' + y + ', z: ' + z);
-    sensors.disableSensor();
+    if (result.status === "discovered") {
+
+    // Create a chain of read promises so we don't try to read a property until we've finished
+        // reading the previous property.
+        // for (let i = 0; i < result.services.length; i++) {
+        //     logOutput("<br>===============", JSON.stringify(result.services[i]), "<br>=============<br>")
+        // }
+
+        let string = "C";
+        let bytes = bluetoothle.stringToBytes(string);
+        let encodedString = bluetoothle.bytesToEncodedString(bytes);
+        bluetoothle.write(r => logOutput(JSON.stringify(r)), e => logOutput(JSON.stringify(e)), {
+            address: resultAddress,
+            service: result.services[0].uuid,
+            characteristic: result.services[0].characteristics[0].uuid,
+            value: encodedString,
+        });
+
+        // for (let i = 4; i < result.services.length; i++) {
+        //     let service = result.services[i];
+        //     for (let j = 1; j < service.characteristics.length; j++) {
+        //         let characteristic = service.characteristics[j];
+        //         logOutput('test', JSON.stringify({
+        //             address: resultAddress,
+        //             service: service.uuid,
+        //             characteristic: characteristic.uuid,
+        //             value: encodedString
+        //         }));
+        //         bluetoothle.write(r => {}, e => {}, {
+        //             address: resultAddress,
+        //             service: service.uuid,
+        //             characteristic: characteristic.uuid,
+        //             value: encodedString
+        //         })
+        //     }
+        // }
+
+
+    // var readSequence = result.services.reduce(function (sequence, service) {
+    //     return sequence.then(function () {
+    //         logOutput(result.address)
+    //         logOutput("service id:", service.uuid)
+    //         logOutput("characteristics:", service.characteristics)
+    //         return addService(result.address, service.uuid, service.characteristics);
+    //     });
+
+    // }, Promise.resolve());
+
+    // // Once we're done reading all the values, disconnect
+    // readSequence.then(function () {
+
+    //     new Promise(function (resolve, reject) {
+
+    //         bluetoothle.disconnect(resolve, reject,
+    //             { address: result.address });
+
+    //     }).then(connectSuccess, handleError);
+
+    // });
+
+    }
 }
 
-// Call itself every timeout interval
-function accelRoutine() {
-    sensors.enableSensor("ACCELEROMETER");
-    sensors.getState(onAccelSuccess, function() {document.getElementById('output').innerHTML = 'failed oops';});
-    setTimeout(accelRoutine, 1000);
+function encodeString(string) {
+    let bytes = bluetoothle.stringToBytes(string);
+    var data = new Uint8Array(bytes.length + 1);
+
+    let checksum = 0;
+    for (let i = 0; i < bytes.length; i++) {
+        data[i] = bytes[i]
+        checksum += bytes[i]
+    }
+    checksum = ~checksum;
+    checksum %= 256;
+    data[bytes.length] = checksum;
+    return bluetoothle.bytesToEncodedString(data);
+}
+
+function wagglePressed() {
+    logOutput("Waggle pressed");
+    let encodedString = encodeString("!C")
+    bluetoothle.write(r => {}, e => {}, {
+        address: resultAddress,
+        service: resultService,
+        characteristic: resultCharacteristic,
+        value: encodedString,
+    })
+
+    logOutput(JSON.stringify({
+        address: resultAddress,
+        service: resultService,
+        characteristic: resultCharacteristic,
+        value: encodedString,
+    }))
+}
+
+function lightPressed() {
+    logOutput("Light pressed");
+    let encodedString = encodeString("!B")
+    bluetoothle.write(r => {}, e => {}, {
+        address: resultAddress,
+        service: resultService,
+        characteristic: resultCharacteristic,
+        value: encodedString,
+    })
+
+    logOutput(JSON.stringify({
+        address: resultAddress,
+        service: resultService,
+        characteristic: resultCharacteristic,
+        value: encodedString,
+    }))
+}
+
+function barkPressed() {
+    logOutput("Bark pressed");
+    let encodedString = encodeString("!A")
+    bluetoothle.write(r => {}, e => {}, {
+        address: resultAddress,
+        service: resultService,
+        characteristic: resultCharacteristic,
+        value: encodedString,
+    })
+
+    logOutput(JSON.stringify({
+        address: resultAddress,
+        service: resultService,
+        characteristic: resultCharacteristic,
+        value: encodedString,
+    }))
 }
 
 function connectSuccess(result) {
@@ -25,6 +169,11 @@ function connectSuccess(result) {
     if (result.status === "connected") {
 
         logOutput("Connected successfully to: " + result.address);
+        resultAddress = result.address;
+        bluetoothle.discover(discoverSuccess, e => {}, {
+            "address": resultAddress,
+            "clearCache": true,
+        });
     }
     else if (result.status === "disconnected") {
 
@@ -108,9 +257,6 @@ function onDeviceReady() {
     document.getElementById('deviceready').classList.add('ready');
     logOutput('on device ready');
 
-    // Accelerometer stuff
-    // accelRoutine();
-
     // Bluetooth stuff
     new Promise(function (resolve) {
 
@@ -120,32 +266,3 @@ function onDeviceReady() {
     }).then(bluetoothInitializationSuccess, function() { logOutput("promise failed for bluetooth init"); });
 
 }
-
-var colorPicker = new iro.ColorPicker(".colorPicker", {
-    // color picker options
-    // Option guide: https://iro.js.org/guide.html#color-picker-options
-    width: 280,
-    color: "rgb(255, 0, 0)",
-    borderWidth: 1,
-    borderColor: "#fff",
-  });
-  
-  var values = document.getElementById("values");
-  var hexInput = document.getElementById("hexInput");
-  
-  // https://iro.js.org/guide.html#color-picker-events
-  colorPicker.on(["color:init", "color:change"], function(color){
-    // Show the current color in different formats
-    // Using the selected color: https://iro.js.org/guide.html#selected-color-api
-    values.innerHTML = [
-      "hex: " + color.hexString,
-      "rgb: " + color.rgbString,
-      "hsl: " + color.hslString,
-    ].join("<br>");
-    
-    hexInput.value = color.hexString;
-  });
-  
-  hexInput.addEventListener('change', function() {
-    colorPicker.color.hexString = this.value;
-  });

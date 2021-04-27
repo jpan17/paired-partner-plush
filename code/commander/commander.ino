@@ -1,7 +1,6 @@
 /* Authors: Jessica Pan and Felicia Zhu
  * Advisor: Michael Littman
  * Spring 2021
- */
 /* ------------------------------------------------------------------------ */
 // library imports
 /* ------------------------------------------------------------------------ */
@@ -38,6 +37,7 @@
 #define BLUEFRUIT_UART_MODE_PIN           -1
 #define BLUEFRUIT_UART_CTS_PIN            -1
 #define BLUEFRUIT_UART_RTS_PIN            -1
+#define BLE_READPACKET_TIMEOUT      10000
 
 /* ------------------------------------------------------------------------ */
 // create objects
@@ -58,6 +58,24 @@ int tap = 0;
 int recVal = 0;
 unsigned long previousMillis = 0;
 const long interval = 10000;
+
+uint8_t light_red = 104;
+uint8_t light_green = 0;
+uint8_t light_blue = 204;
+/* ------------------------------------------------------------------------ */
+// helper functions and variables for Bluefruit functionality
+void error(const __FlashStringHelper*err) {
+  Serial.println(err);
+  while (1);
+}
+
+// function prototypes over in packetparser.cpp
+uint8_t readPacket(Adafruit_BLE *ble, uint16_t timeout);
+float parsefloat(uint8_t *buffer);
+void printHex(const uint8_t * data, const uint32_t numBytes);
+
+// the packet buffer
+extern uint8_t packetbuffer[];
 
 /* ------------------------------------------------------------------------ */
 // runs one time when first starting
@@ -104,11 +122,44 @@ void setup() {
   flash();
 
   touch_light -> get();
-
-  // 7. Adafruit Bluefruit
-  // TODO
-
   previousMillis = millis();
+  
+  // 7. Adafruit Bluefruit
+  Serial.println("Adafruit Bluefruit connecting");
+  if (!ble.begin(VERBOSE_MODE)) {
+    error(F("Couldn't find Bluefruit"));
+  }
+  
+  // perform factory reset to make sure everything in known state
+  if (FACTORYRESET_ENABLE) {
+    Serial.println("Performing factory reset...");
+    if (!ble.factoryReset()) {
+      error(F("Couldn't factory reset"));
+    }
+  }
+
+  // disable command echo from Bluefruit
+  ble.echo(false);
+
+  Serial.println("Requesting Bluefruit info:");
+  ble.info();
+
+  ble.verbose(false);
+
+  while (!ble.isConnected()) {
+    delay(500);
+  }
+  Serial.println("Bluefruit connected!");
+
+  // LED Activity command only supported from 0.6.6
+  if (ble.isVersionAtLeast(MINIMUM_FIRMWARE_VERSION)) {
+    Serial.println(F("Change LED activity to " MODE_LED_BEHAVIOUR));
+    ble.sendCommandCheckOK("AT+HWModeLED=" MODE_LED_BEHAVIOUR);
+  }
+
+  // Set Bluefruit to DATA mode
+  Serial.println("Switching to DATA mode!");
+  ble.setMode(BLUEFRUIT_MODE_DATA);
   
 }
 
@@ -143,8 +194,66 @@ void loop() {
       rainbow(50);
     }
   }
+
+  // 4. Bluefruit data arrives
+  uint8_t len = readPacket(&ble, BLE_READPACKET_TIMEOUT);
+  if (len == 0) return;
+
+  // color picker
+  if (packetbuffer[1] == 'C') {
+    uint8_t red = packetbuffer[2];
+    uint8_t green = packetbuffer[3];
+    uint8_t blue = packetbuffer[4];
+
+    Serial.print ("RGB #");
+    if (red < 0x10) Serial.print("0");
+    Serial.print(red, HEX);
+    if (green < 0x10) Serial.print("0");
+    Serial.print(green, HEX);
+    if (blue < 0x10) Serial.print("0");
+    Serial.println(blue, HEX);
+
+    light_red = red;
+    light_green = green;
+    light_blue = blue;
+
+    // blink the color real quick
+    for (int i = 0; i < strip.numPixels(); i++) {
+      strip.setPixelColor(i, light_red, light_green, light_blue);
+    }
+    strip.show();
+    delay(1000);
+    off();
+  }
+
+  // button presses
+  if (packetbuffer[1] == 'B') {
+    uint8_t buttnum = packetbuffer[2] - '0';
+    boolean pressed = packetbuffer[3] - '0';
+    Serial.print ("Button "); 
+    Serial.print(buttnum);
+    if (pressed) {
+      Serial.println(" pressed");
+    } else {
+      Serial.println(" released");
+    }
+  }
 }
 
+// code to flash NeoPixels when stable connection made
+void flash() {
+  for (int i = 0; i < strip.numPixels(); i++) {
+    strip.setPixelColor(i, 255, 255, 255);
+  }
+  strip.show();
+  delay(200);
+
+  for (int i = 0; i < strip.numPixels(); i++) {
+    strip.setPixelColor(i, 0, 0, 0);
+  }
+  strip.show();
+  delay(200);
+}
 /* ------------------------------------------------------------------------ */
 // gets the distance measurements from the ultrasonic sensor
 float getDistance() {
@@ -208,7 +317,7 @@ ICACHE_RAM_ATTR void touchSensor() {
   while (digitalRead(TOUCH_PIN) == 1) {
     touch_light -> save(sealVal);
     for(int i = 0; i < strip.numPixels(); i++) {
-      strip.setPixelColor(i, 102, 0, 204);
+      strip.setPixelColor(i, light_red, light_green, light_blue);
     }
     strip.show();
   }
@@ -276,22 +385,6 @@ uint32_t Wheel(byte WheelPos) {
   }
   WheelPos -= 170;
   return strip.Color(WheelPos * 3, 255 - WheelPos * 3, 0);
-}
-
-/* ------------------------------------------------------------------------ */
-// code to flash NeoPixels when stable connection made
-void flash() {
-  for (int i = 0; i < strip.numPixels(); i++) {
-    strip.setPixelColor(i, 255, 255, 255);
-  }
-  strip.show();
-  delay(200);
-
-  for (int i = 0; i < strip.numPixels(); i++) {
-    strip.setPixelColor(i, 0, 0, 0);
-  }
-  strip.show();
-  delay(200);
 }
 
 /* ------------------------------------------------------------------------ */

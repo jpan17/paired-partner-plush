@@ -35,14 +35,14 @@ AdafruitIO_WiFi io(IO_USERNAME, IO_KEY, WIFI_SSID, WIFI_PASS);
 #define VERBOSE_MODE true // enables debug output
 
 // Software UART settings
-#define BLUEFRUIT_SWUART_RXO_PIN 4
-#define BLUEFRUIT_SWUART_TXO_PIN 3 
-#define BLUEFRUIT_UART_CTS_PIN -1 // unused
-#define BLUEFRUIT_UART_RTS_PIN 4
+#define BLUEFRUIT_SWUART_RXO_PIN 9
+#define BLUEFRUIT_SWUART_TXO_PIN 10 
+#define BLUEFRUIT_UART_CTS_PIN 11 // unused
+#define BLUEFRUIT_UART_RTS_PIN -1
 
 // Hardware UART settings
 #ifdef Serial1
   #define BLUEFRUIT_HWSERIAL_NAME Serial1
 #endif
 
-#define BLUEFRUIT_UART_MODE_PIN -1 // unused
+#define BLUEFRUIT_UART_MODE_PIN 12 // unused

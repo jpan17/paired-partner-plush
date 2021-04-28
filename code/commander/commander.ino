@@ -172,13 +172,13 @@ void loop() {
   distance = getDistance();
   if (distance <= 10) {
     Serial.println("Object detected");
+    
     // wiggle the servo
     myservo.write(10);
     delay(100);
 
     myservo.write(150);
     delay(100);
-
     playTune();
   }
 

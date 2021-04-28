@@ -50,48 +50,6 @@ function discoverSuccess(result) {
             value: encodedString,
         });
 
-        // for (let i = 4; i < result.services.length; i++) {
-        //     let service = result.services[i];
-        //     for (let j = 1; j < service.characteristics.length; j++) {
-        //         let characteristic = service.characteristics[j];
-        //         logOutput('test', JSON.stringify({
-        //             address: resultAddress,
-        //             service: service.uuid,
-        //             characteristic: characteristic.uuid,
-        //             value: encodedString
-        //         }));
-        //         bluetoothle.write(r => {}, e => {}, {
-        //             address: resultAddress,
-        //             service: service.uuid,
-        //             characteristic: characteristic.uuid,
-        //             value: encodedString
-        //         })
-        //     }
-        // }
-
-
-    // var readSequence = result.services.reduce(function (sequence, service) {
-    //     return sequence.then(function () {
-    //         logOutput(result.address)
-    //         logOutput("service id:", service.uuid)
-    //         logOutput("characteristics:", service.characteristics)
-    //         return addService(result.address, service.uuid, service.characteristics);
-    //     });
-
-    // }, Promise.resolve());
-
-    // // Once we're done reading all the values, disconnect
-    // readSequence.then(function () {
-
-    //     new Promise(function (resolve, reject) {
-
-    //         bluetoothle.disconnect(resolve, reject,
-    //             { address: result.address });
-
-    //     }).then(connectSuccess, handleError);
-
-    // });
-
     }
 }
 

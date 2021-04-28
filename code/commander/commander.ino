@@ -25,7 +25,7 @@
 #define SERVO_PIN 0
 #define TOUCH_PIN 13
 #define NEOPIXEL_PIN 5
-#define DISTANCE_PIN_TRIG 12 // Trigger pin of ultrasonic sensor
+#define DISTANCE_PIN_TRIG 12 // Trigger pin of ultrasonic sen sor
 #define DISTANCE_PIN_ECHO 14 // Echo pin of ultrasonic sensor
 
 #define NUM_PIXELS 5

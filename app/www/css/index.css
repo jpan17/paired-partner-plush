@@ -16,31 +16,31 @@
  * specific language governing permissions and limitations
  * under the License.
  */
- * {
-    -webkit-tap-highlight-color: rgba(0,0,0,0); /* make transparent link selection, adjust last value opacity 0 to 1.0 */
-}
-
 body {
     -webkit-touch-callout: none;                /* prevent callout to copy image, etc when tap to hold */
     -webkit-text-size-adjust: none;             /* prevent webkit from resizing text to fit */
     -webkit-user-select: none;                  /* prevent copy paste, to allow, change 'none' to 'text' */
-    background-color:#E4E4E4;
-    font-family: system-ui, -apple-system, -apple-system-font, 'Segoe UI', 'Roboto', sans-serif;
-    font-size:12px;
+    font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
+    font-size: 36px;
+    font-weight: bold;
+    color: turquoise;
     height:100vh;
     margin:0px;
+    letter-spacing: 5px;
     padding:0px;
     /* Padding to avoid the "unsafe" areas behind notches in the screen */
     padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px);
     text-transform:uppercase;
     width:100%;
+    background-color: antiquewhite;
 }
 
 /* Portrait layout (default) */
 .app {
+    background-color: transparent;
     position:absolute;             /* position in the center of the screen */
-    left:50%;
-    top:50%;
+    left:45%;
+    top:70%;
     height:50px;                   /* text area height */
     width:225px;                   /* text area width */
     text-align:center;
@@ -60,8 +60,7 @@ body {
 }
 
 h1 {
-    font-size:24px;
-    font-weight:normal;
+    font-weight:bold;
     margin:0px;
     overflow:visible;
     padding:0px;
@@ -100,3 +99,37 @@ h1 {
     -webkit-animation:fade 3000ms infinite;
 }
 
+.background-img {
+    content: url('../img/NeutralSeal.png');
+    position: fixed;
+    left: 30px;
+    top: 35%;
+    width: 300px;
+}
+
+.background-img:active {
+    content:url('../img/HappySeal.png');
+}
+
+.button {
+    width: 80px;
+    height: 80px;
+}
+
+.bark {
+    position: fixed;
+    left: 20px;
+    top: 50px;
+}
+
+.waggle {
+    position: fixed;
+    left: 40%;
+    top: 25px;
+}
+
+.light {
+    position: fixed;
+    right: 20px;
+    top: 50px;
+}

@@ -7,7 +7,7 @@
 
 //Input your WiFi username and password here so the ESP8266 can connect to it
 #define WIFI_SSID "Atlas"
-#define WIFI_PASS "Jp26772!"
+#define WIFI_PASS "inputpasswordgoeshere"
 
 #include "AdafruitIO_WiFi.h"
 

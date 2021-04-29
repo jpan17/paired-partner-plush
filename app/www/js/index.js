@@ -1,34 +1,145 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
+// Wait for the deviceready event before using any of Cordova's device APIs.
+// See https://cordova.apache.org/docs/en/latest/cordova/events/events.html#deviceready
 document.addEventListener('deviceready', onDeviceReady, false);
+var resultAddress = '';
+var resultService = '6e400001-b5a3-f393-e0a9-e50e24dcca9e';
+var resultCharacteristic = '6e400002-b5a3-f393-e0a9-e50e24dcca9e';
 
-function logOutput(message) {
-    document.getElementById('output').innerHTML += message + '<br>';
+function logOutput(...message) {
+    document.getElementById('output').innerHTML += message.join(' ') + '<br>';
 }
 
-function onAccelSuccess(acceleration) {
-    var x = acceleration[0]; 
-    var y = acceleration[1];
-    var z = acceleration[2];
-
-    logOutput('x: ' + x + ', y: ' + y + ', z: ' + z);
-    sensors.disableSensor();
+function changeSeal() {
+    var seal = document.getElementById()
 }
 
-// Call itself every timeout interval
-function accelRoutine() {
-    sensors.enableSensor("ACCELEROMETER");
-    sensors.getState(onAccelSuccess, function() {document.getElementById('output').innerHTML = 'failed oops';});
-    setTimeout(accelRoutine, 1000);
+function discoverSuccess(result) {
+    // logOutput("length:", result.services.length)
+    // logOutput("Discover returned with status: " + result.status);
+
+    if (result.status === "discovered") {
+
+    // Create a chain of read promises so we don't try to read a property until we've finished
+        // reading the previous property.
+        // for (let i = 0; i < result.services.length; i++) {
+        //     logOutput("<br>===============", JSON.stringify(result.services[i]), "<br>=============<br>")
+        // }
+
+        let string = "C";
+        let bytes = bluetoothle.stringToBytes(string);
+        let encodedString = bluetoothle.bytesToEncodedString(bytes);
+        bluetoothle.write(r => logOutput(JSON.stringify(r)), e => logOutput(JSON.stringify(e)), {
+            address: resultAddress,
+            service: result.services[0].uuid,
+            characteristic: result.services[0].characteristics[0].uuid,
+            value: encodedString,
+        });
+
+    }
+}
+
+function encodeString(string) {
+    let bytes = bluetoothle.stringToBytes(string);
+    var data = new Uint8Array(bytes.length + 1);
+
+    let checksum = 0;
+    for (let i = 0; i < bytes.length; i++) {
+        data[i] = bytes[i]
+        checksum += bytes[i]
+    }
+    checksum = ~checksum;
+    checksum %= 256;
+    data[bytes.length] = checksum;
+    return bluetoothle.bytesToEncodedString(data);
+}
+
+function wagglePressed() {
+    logOutput("Waggle pressed");
+    let encodedString = encodeString("!W")
+    bluetoothle.write(r => {}, e => {}, {
+        address: resultAddress,
+        service: resultService,
+        characteristic: resultCharacteristic,
+        value: encodedString,
+    })
+
+    // logOutput(JSON.stringify({
+    //     address: resultAddress,
+    //     service: resultService,
+    //     characteristic: resultCharacteristic,
+    //     value: encodedString,
+    // }))
+}
+
+function lightPressed() {
+    logOutput("Light pressed");
+    let encodedString = encodeString("!L")
+    bluetoothle.write(r => {}, e => {}, {
+        address: resultAddress,
+        service: resultService,
+        characteristic: resultCharacteristic,
+        value: encodedString,
+    })
+
+    // logOutput(JSON.stringify({
+    //     address: resultAddress,
+    //     service: resultService,
+    //     characteristic: resultCharacteristic,
+    //     value: encodedString,
+    // }))
+}
+
+function barkPressed() {
+    logOutput("Bark pressed");
+    let encodedString = encodeString("!B")
+    bluetoothle.write(r => {}, e => {}, {
+        address: resultAddress,
+        service: resultService,
+        characteristic: resultCharacteristic,
+        value: encodedString,
+    })
+
+    // logOutput(JSON.stringify({
+    //     address: resultAddress,
+    //     service: resultService,
+    //     characteristic: resultCharacteristic,
+    //     value: encodedString,
+    // }))
 }
 
 function connectSuccess(result) {
 
     if (result.status === "connected") {
 
-        logOutput("Connected successfully to: " + result.address);
+        // logOutput("Connected successfully to: " + result.address);
+        resultAddress = result.address;
+        bluetoothle.discover(discoverSuccess, e => {}, {
+            "address": resultAddress,
+            "clearCache": true,
+        });
     }
     else if (result.status === "disconnected") {
 
-        logOutput("Disconnected from device: " + result.address);
+        // logOutput("Disconnected from device: " + result.address);
     }
 }
 
@@ -38,11 +149,11 @@ function stopScan() {
 
 function startScanSuccess(result) {
     if (result.status === 'scanStarted') {
-        logOutput('Scan started');
+        // logOutput('Scan started');
     }
     if (result.status === 'scanResult') {
         if (result.name === 'Adafruit Bluefruit LE') {
-            logOutput('Scan has found a compatible device: ' + result.name + ', ' + result.address);
+            // logOutput('Scan has found a compatible device: ' + result.name + ', ' + result.address);
 
             stopScan();
             new Promise(function (resolve, reject) {
@@ -57,39 +168,41 @@ function startScanSuccess(result) {
 
 function stopScanSuccess(result) {
     if (result.status === 'scanStopped') {
-        logOutput('Scan stopped');
+        // logOutput('Scan stopped');
     } else {
-        logOutput('Scan failed to stop');
+        // logOutput('Scan failed to stop');
     }
 }
 
 function bluetoothInitializationSuccess(result) {
 
     if (result.status === 'enabled') {
-        logOutput('Bluetooth enabled!');
+        // logOutput('Bluetooth enabled!');
     } else {
-        logOutput('Error enabling Bluetooth');
+        // logOutput('Error enabling Bluetooth');
     }
 
     // check/request permissions
     bluetoothle.hasPermission(function(result) {
         if (result.hasPermission) {
-            logOutput('Has permission: ' + result.hasPermission)            
+            // logOutput('Has permission: ' + result.hasPermission)            
         } else {
-            logOutput('Requesting permission...');
+            // logOutput('Requesting permission...');
             bluetoothle.requestPermission(function(result) {logOutput('Permission granted: ' + result.requestPermission)}, function() { logOutput('Permission request failed')});
         }
     });
     bluetoothle.isLocationEnabled(function(result) {
         if (result.isLocationEnabled) {
-            logOutput('Location enabled: ' + result.isLocationEnabled)            
+            // logOutput('Location enabled: ' + result.isLocationEnabled)            
         } else {
-            logOutput('Requesting location...');
+            // logOutput('Requesting location...');
             bluetoothle.requestLocation(function(result) {logOutput('Location granted: ' + result.requestLocation)}, function() { logOutput('Location request failed')});
         }
     });
 
-    bluetoothle.startScan(startScanSuccess, function() { logOutput("Scan failed"); }, {
+    bluetoothle.startScan(startScanSuccess, function() { 
+        // logOutput("Scan failed"); 
+    }, {
         "services": [],
         "scanMode": bluetoothle.SCAN_MODE_LOW_LATENCY,
         "matchMode": bluetoothle.MATCH_MODE_AGGRESSIVE,
@@ -106,46 +219,16 @@ function onDeviceReady() {
 
     console.log('Running cordova-' + cordova.platformId + '@' + cordova.version);
     document.getElementById('deviceready').classList.add('ready');
-    logOutput('on device ready');
-
-    // Accelerometer stuff
-    // accelRoutine();
+    // logOutput('on device ready');
 
     // Bluetooth stuff
     new Promise(function (resolve) {
 
         bluetoothle.initialize(resolve, { request: true, statusReceiver: false });
-        logOutput('bluetoothle initialize called');
+        // logOutput('bluetoothle initialize called');
 
-    }).then(bluetoothInitializationSuccess, function() { logOutput("promise failed for bluetooth init"); });
+    }).then(bluetoothInitializationSuccess, function() { 
+        // logOutput("promise failed for bluetooth init"); 
+    });
 
 }
-
-var colorPicker = new iro.ColorPicker(".colorPicker", {
-    // color picker options
-    // Option guide: https://iro.js.org/guide.html#color-picker-options
-    width: 280,
-    color: "rgb(255, 0, 0)",
-    borderWidth: 1,
-    borderColor: "#fff",
-  });
-  
-  var values = document.getElementById("values");
-  var hexInput = document.getElementById("hexInput");
-  
-  // https://iro.js.org/guide.html#color-picker-events
-  colorPicker.on(["color:init", "color:change"], function(color){
-    // Show the current color in different formats
-    // Using the selected color: https://iro.js.org/guide.html#selected-color-api
-    values.innerHTML = [
-      "hex: " + color.hexString,
-      "rgb: " + color.rgbString,
-      "hsl: " + color.hslString,
-    ].join("<br>");
-    
-    hexInput.value = color.hexString;
-  });
-  
-  hexInput.addEventListener('change', function() {
-    colorPicker.color.hexString = this.value;
-  });

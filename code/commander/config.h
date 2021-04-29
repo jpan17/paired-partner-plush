@@ -1,5 +1,5 @@
-
-
+// WIFI imports and settings
+/* ------------------------------------------------------------------------ */
 
 //get this info from the "My Key" section of the Adafruit IO website
 #define IO_USERNAME  "increment"
@@ -7,14 +7,7 @@
 
 //Input your WiFi username and password here so the ESP8266 can connect to it
 #define WIFI_SSID "Atlas"
-#define WIFI_PASS "Jp26772!"
-
-  
-
-// ***************************IGNORE ALL BELOW THIS**********************************
-
-
-
+#define WIFI_PASS "inputpasswordgoeshere"
 
 #include "AdafruitIO_WiFi.h"
 
@@ -34,3 +27,22 @@ AdafruitIO_WiFi io(IO_USERNAME, IO_KEY, WIFI_SSID, WIFI_PASS, SPIWIFI_SS,
 #else
 AdafruitIO_WiFi io(IO_USERNAME, IO_KEY, WIFI_SSID, WIFI_PASS);
 #endif
+
+// BLUEFRUIT IMPORTS / SETTINGS
+/* ------------------------------------------------------------------------ */
+// these settings used in both SW UART, HW UART and SPI mode
+#define BUFSIZE 128 // size of read buffer for incoming data
+#define VERBOSE_MODE true // enables debug output
+
+// Software UART settings
+#define BLUEFRUIT_SWUART_RXO_PIN 9
+#define BLUEFRUIT_SWUART_TXO_PIN 10 
+#define BLUEFRUIT_UART_CTS_PIN 11 // unused
+#define BLUEFRUIT_UART_RTS_PIN -1
+
+// Hardware UART settings
+#ifdef Serial1
+  #define BLUEFRUIT_HWSERIAL_NAME Serial1
+#endif
+
+#define BLUEFRUIT_UART_MODE_PIN 4
